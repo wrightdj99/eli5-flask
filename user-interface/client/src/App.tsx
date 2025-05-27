@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { List, TextField, Typography } from '@mui/material';
 import './App.css'
+import { useState } from 'react';
+import {Paper, ListItem, ListItemText} from '@mui/material'
+import axios from 'axios';
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [request, setRequest] = useState("")
+  const [messages, addMessages] = useState<string[]>([])
+  function handleSubmit(request: string) {
+    addMessages(prev => [...prev, request])
+    axios.post("http://127.0.0.1:5000/submit", {
+      "request": request,
+      "age": "26",
+      "history": []
+    }).then(res => {
+        console.log(res.data.response);
+        addMessages(prev => [...prev, res.data.response]);
+    }).catch(error => {
+        console.error(error);
+    });
+  }
+  const handleKeyDown = (e) => {
+    if (e.key == "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (request.trim()) {
+        handleSubmit(request);
+        setRequest("");
+      }
+    }
+  }
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <Typography variant='h3'>Explain Like I'm 5 Client</Typography>
+      <Paper sx={{ height: 300, overflowY: 'auto', p: 2, mb: 2}}>
+        <List>
+          {messages.map((msg, idx) => (
+            <ListItem key={idx}>
+              <ListItemText primary={msg}/>
+            </ListItem>
+          ))}
+        </List>
+      </Paper>
+      <TextField
+        id='request-content'
+        label='Request'
+        placeholder='Ask anything'
+        multiline
+        variant='filled'
+        value={request}
+        onChange={(e) => setRequest(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
+  );
 }
 
 export default App

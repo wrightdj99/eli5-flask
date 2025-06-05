@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from Connections.eli5 import explain_like_im_5
+from Connections.eli5 import explain_like_im_5, clean_escaped_newlines
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
@@ -19,7 +19,7 @@ def handle_request():
         ]
 
         return jsonify({
-            "response": answer.get("text", ""),
+            "response": clean_escaped_newlines(answer.get("text", "")),
             "history": serialized_history
         }), 200
     else:
